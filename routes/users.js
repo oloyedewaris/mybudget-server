@@ -79,29 +79,25 @@ exports.registerUser = (req, res) => {
 
 // update function
 exports.updateUser = (req, res) => {
-  const { email, password, budget, balanceData } = req.body;
+  const { email, budget, balanceData } = req.body;
 
   // backend Validations
-  if (!email || !password || !budget || !balanceData)
+  if (!email || !budget || !balanceData)
     return res.status(400).json("Please enter all fields");
 
   //Check for existing user
   User.findOne({ email })
     .then(user => {
       if (!user) return res.status(400).json("email not found");
-      //Compare user's password
-      bcrypt.compare(password, user.password).then(isMatch => {
-        if (!isMatch) return res.status(400).json("Invalid password");
-        User.findOneAndUpdate(
-          { email },
-          { $set: { budget, balanceData } },
-          { new: true, upsert: true },
-          (err, user) => {
-            if (err) return res.status(400).json({ err, msg: 'an error occured' })
-            return res.status(200).json({ user });
-          }
-        )
-      });
+      User.findOneAndUpdate(
+        { email },
+        { $set: { budget, balanceData } },
+        { new: true, upsert: true },
+        (err, user) => {
+          if (err) return res.status(400).json({ err, msg: 'an error occured' })
+          return res.status(200).json({ user });
+        }
+      )
     })
     .catch(err => res.status(500).json({ success: false, msg: "Failed, internal server error", err }))
 };
